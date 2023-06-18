@@ -29,6 +29,8 @@ class Game:
 
                 self.Cards.pick_up_cards()
 
+                self.Cards.drop_cards()
+
     def main_loop(self):
         while True:
             self.draw()
