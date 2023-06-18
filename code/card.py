@@ -8,6 +8,8 @@ class Card:
 
     def __init__(self, game):
 
+        #?!?!?!??!?!
+
         self.win = game.win
 
         self.all_cards = []
