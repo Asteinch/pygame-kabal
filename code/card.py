@@ -57,9 +57,6 @@ class Card:
                 y_inc += 30
 
 
-
-                
-
     def get_value_and_type(self, name):
 
         # finner kort type og verdi fra filnavnet til bilde gitt
@@ -176,22 +173,50 @@ class Card:
 
     def pick_up_cards(self):
 
-        pos = pygame.mouse.get_pos()
+        if len(self.held_cards) == 0:
 
-        for pile in self.piles:
+            pos = pygame.mouse.get_pos()
 
-            for card in pile:
+            pile_number = 0
 
-                if card[2].collidepoint(pos):
+            for pile in self.piles:
 
-                    index_of_card = pile.index(card)
-                    self.held_cards = [inner_list for inner_list in pile[index_of_card:]]
+                for card in pile:
 
-                    pile = [cock for cock in pile if cock not in self.held_cards]
+                    if card[2].collidepoint(pos):
 
-                    print("PILE: ", pile)
+                        index_of_card = pile.index(card)
+                        self.held_cards = [inner_list for inner_list in pile[index_of_card:]]
 
-                    print("HELD CARDS: ", self.held_cards)
+                        self.piles[pile_number] = [cock for cock in pile if cock not in self.held_cards]
+
+                pile_number += 1
+
+    def drop_cards(self):
+
+        if len(self.held_cards) > 0:
+
+            pos = pygame.mouse.get_pos()
+
+            pile_number = 0
+
+            for pile in self.piles:
+
+                for card in pile:
+
+                    if card[2].collidepoint(pos):
+
+                        for held_card in self.held_cards:
+
+                            self.piles[pile_number].append(held_card)
+
+                        self.held_cards = []
+
+                pile_number += 1
+
+                    
+
+
 
             
     def draw(self):
