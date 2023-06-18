@@ -27,6 +27,10 @@ class Game:
             if event.type == pygame.QUIT:
                 quit()
 
+            if event.type == pygame.MOUSEBUTTONDOWN:
+
+                self.Cards.pick_up_cards()
+
     def main_loop(self):
         while True:
             self.draw()
