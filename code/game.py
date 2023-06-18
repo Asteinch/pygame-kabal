@@ -2,7 +2,6 @@ import pygame
 
 from card import Card
 
-
 class Game:
     def __init__(self):
         self.win = pygame.display.set_mode((1200, 800))
@@ -18,12 +17,11 @@ class Game:
         self.Cards.draw()
 
     def update(self):
-
         pygame.display.update()
-        pass
 
     def check_for_events(self):
         for event in pygame.event.get():
+            
             if event.type == pygame.QUIT:
                 quit()
 
