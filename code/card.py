@@ -1,9 +1,6 @@
 import pygame
-
 import re
-
 import random
-
 import os
 
 class Card:
@@ -13,15 +10,11 @@ class Card:
         self.win = game.win
 
         self.all_cards = []
-
         self.piles = [[], [], [], [], [], [], []]
-
         self.deck =[]
-
         self.held_cards = []
 
         self.back_card = pygame.image.load("images/h96/upscaled/backbluepattern.png")
-
         self.empty_tile = pygame.image.load("images/h96/upscaled/emptytile.png")
 
         self.get_all_cards()
@@ -30,9 +23,9 @@ class Card:
 
     
     def extract_number(self, filename):
-        #skrevet av chatgpt fordi jeg kan ikke programmere
+        # skrevet av chatgpt fordi jeg kan ikke programmere
 
-        pattern = r'\d+'  # Regular expression pattern to match one or more digits
+        pattern = r'\d+' 
         match = re.search(pattern, filename)
         
         if match:
@@ -45,16 +38,15 @@ class Card:
 
         pos = pygame.mouse.get_pos()
 
-        x_inc, y_inc = 0, 0 
-
+        y_increase = 0
 
         if len(self.held_cards) != 0:
 
             for card in self.held_cards:
 
-                self.win.blit(card[0], (pos[0], pos[1] + y_inc))
+                self.win.blit(card[0], (pos[0], pos[1] + y_increase))
 
-                y_inc += 30
+                y_increase += 30
 
 
     def get_value_and_type(self, name):
@@ -72,32 +64,27 @@ class Card:
 
     def get_all_cards(self):
 
-        # henter alle kort bildene og legger de i en lioste med bilde, korttype og verdi
+        # henter alle kort bildene og legger de i en liste med bilde, korttype og verdi
 
         for filename in os.listdir("images/h96/upscaled"):
 
             if filename != "backbluepattern.png" and filename != "emptytile.png":
 
-                self.all_cards.append( 
-                    
-                    
+                self.all_cards.append(
                     [pygame.image.load("images/h96/upscaled/" + filename),
-
                     (self.get_value_and_type(filename)),
-
-                    pygame.Rect(0, 0, 0, 0)])
+                    pygame.Rect(0, 0, 0, 0)]
+                    )
 
 
 
     def shuffle(self):
 
-        # forklarer seg selv
-
         random.shuffle(self.all_cards)
 
     def deal_cards(self):
 
-        # henter tilfeldige kort fra kortstokken som skal brukes av spillern
+        # henter tilfeldige kort fra kortstokken og legger de i en egen liste og fjerner kortene fra dekk listen
 
         card_pile_length = 1
 
@@ -118,7 +105,7 @@ class Card:
 
     def print_top_decks(self):
 
-        # printer dekkene øverst på brettet
+        # Viser kortene som er bunket på toppen
 
         pos_x = 675
 
@@ -128,18 +115,23 @@ class Card:
 
             pos_x += 100 + 25
 
-    def get_card_hitbox(self, x, y, pile, piles):
+    def get_card_hitbox(self, x, y, pile, card):
+
+        # Legger inn posisjonenene til alle kortene spillern kan påvirke
 
 
-        if pile != pile[-1]:
+        if card != pile[-1]:
             return pygame.Rect(x, y, 104, 30)      
         else: 
+
+            #print(pile, piles[-1])
+
             return pygame.Rect(x, y, 106, 144)
 
 
     def print_piles(self):
 
-        # Viser spillern kortene de kan bruke
+        # Viser spillern kortene de spiller med
 
         print_x = 300
         print_y = 200
@@ -150,12 +142,11 @@ class Card:
 
             for card in pile:
 
-                #print(card)
                 """"
+                dette er for å sjule kortene som ikke er fremst i rekken, brukes ikke for øyeblikket
+                
 
                 if len(pile) > 0 and card != pile[-1]:
-
-                    # skjuler kortet hvsi det ikke er fremst i rekken
 
                     self.win.blit(self.back_card, (print_x, print_y))
                 
@@ -165,7 +156,7 @@ class Card:
     
                 self.win.blit(card[0], (print_x, print_y))
 
-                card[2] = self.get_card_hitbox(print_x, print_y, pile, self.piles)
+                card[2] = self.get_card_hitbox(print_x, print_y, pile, card)
 
                 print_y += 30
 
@@ -173,35 +164,39 @@ class Card:
 
     def pick_up_cards(self):
 
+        # sjekker alle kort og om spillern prøver å plukke de opp, hvis så vil kortene bli plukket opp
+
         if len(self.held_cards) == 0:
 
             pos = pygame.mouse.get_pos()
-
             pile_number = 0
 
             for pile in self.piles:
-
                 for card in pile:
 
                     if card[2].collidepoint(pos):
 
-                        index_of_card = pile.index(card)
-                        self.held_cards = [inner_list for inner_list in pile[index_of_card:]]
+                        if len(self.held_cards) == 0:
 
-                        self.piles[pile_number] = [cock for cock in pile if cock not in self.held_cards]
+                            # fjerner kortet og alle kortene under som spillern har valgt fra pile listen og legger de til held card listen
 
+                            index_of_card = pile.index(card)
+                            self.held_cards = [inner_list for inner_list in pile[index_of_card:]]
+
+                            self.piles[pile_number] = [card for card in pile if card not in self.held_cards]
+                            
                 pile_number += 1
 
     def drop_cards(self):
 
+        # Slipper kortene på den bunken spillern har trykket på
+
         if len(self.held_cards) > 0:
 
             pos = pygame.mouse.get_pos()
-
             pile_number = 0
 
             for pile in self.piles:
-
                 for card in pile:
 
                     if card[2].collidepoint(pos):
@@ -213,10 +208,6 @@ class Card:
                         self.held_cards = []
 
                 pile_number += 1
-
-                    
-
-
 
             
     def draw(self):
