@@ -14,12 +14,23 @@ class Card:
         self.piles = [[], [], [], [], [], [], []]
         self.deck =[]
         self.held_cards = []
+
+        self.top_decks = [[], [], [], []]
+
         self.pile_is_empty = [pygame.Rect(0,0,0,0),pygame.Rect(0,0,0,0),pygame.Rect(0,0,0,0),pygame.Rect(0,0,0,0),pygame.Rect(0,0,0,0),pygame.Rect(0,0,0,0),pygame.Rect(0,0,0,0),pygame.Rect(0,0,0,0)]
+        self.from_pile_hitbox = pygame.Rect(0,0,0,0)
+
+        self.pile_number = 0
 
         self.pile_dragged_from = int
 
         self.back_card = pygame.image.load("images/h96/upscaled/backbluepattern.png")
         self.empty_tile = pygame.image.load("images/h96/upscaled/emptytile.png")
+
+        self.top_decks = [[[self.empty_tile, ["0", 0], pygame.Rect(675, 30, 106, 144)]], 
+                          [[self.empty_tile, ["0", 0], pygame.Rect(800, 30, 106, 144)]], 
+                          [[self.empty_tile, ["0", 0], pygame.Rect(925, 30, 106, 144)]], 
+                          [[self.empty_tile, ["0", 0], pygame.Rect(1050, 30, 106, 144)]]]
 
         self.get_all_cards()
         self.shuffle()
@@ -41,7 +52,7 @@ class Card:
 
         for filename in os.listdir("images/h96/upscaled"):
 
-            if filename != "backbluepattern.png" and filename != "emptytile.png":
+            if filename != "backbluepattern.png" and filename != "emptytile.png" and filename != "restock.png":
 
                 self.all_cards.append(
                     [pygame.image.load("images/h96/upscaled/" + filename),
@@ -76,6 +87,9 @@ class Card:
         for pile in self.piles:
             pile[-1][3] = False
 
+        print(self.piles)
+
+
     def print_held_cards(self):
 
         pos = pygame.mouse.get_pos()
@@ -97,7 +111,8 @@ class Card:
 
         for i in range(4):
 
-            self.win.blit(self.empty_tile, (pos_x, 30))
+            self.win.blit(self.top_decks[i][-1][0], (pos_x, 30))
+
             pos_x += 100 + 25
 
     def print_piles(self):
@@ -144,8 +159,9 @@ class Card:
                             self.piles[pile_number] = [card for card in pile if card not in self.held_cards]
 
                             self.pile_dragged_from = pile_number
-                            
 
+                            self.pile_number = pile_number
+          
     def drop_cards(self):
 
         if len(self.held_cards) > 0:
@@ -153,7 +169,8 @@ class Card:
             pos = pygame.mouse.get_pos()
 
             for hitbox_index, hitbox in enumerate(self.pile_is_empty):
-                if hitbox.collidepoint(pos) and self.held_cards[0][1][1] == 13:
+                if (hitbox.collidepoint(pos)) and (self.held_cards[0][1][1] == 13 or hitbox_index == self.pile_number):
+                # for tomme bunker
 
                     self.piles[hitbox_index].extend(self.held_cards)
                     self.held_cards = []
@@ -166,13 +183,59 @@ class Card:
                 
             for pile_number, pile in enumerate(self.piles):
                 for card in pile:
-                    if card[2].collidepoint(pos):
+                # for vanlig plasseringer
+
+                    if card[2].collidepoint(pos) and (self.can_place(card, pile_number) == True):
 
                         self.piles[pile_number].extend(self.held_cards)
                         self.held_cards = []
 
                         if len(self.piles[self.pile_dragged_from]) > 0 and self.piles[self.pile_dragged_from][-1][3]:
                             self.piles[self.pile_dragged_from][-1][3] = False
+                
+            if len(self.held_cards) == 1:
+                for index, slot in enumerate(self.top_decks):
+                # for toppbunkene
+
+                    if slot[0][2].collidepoint(pos):
+
+                        if slot[0][1][1] == 0 and self.held_cards[0][1][1] == 1:
+
+                            slot.append(self.held_cards[0])
+                            self.held_cards = []
+
+                            if len(self.piles[self.pile_dragged_from]) > 0 and self.piles[self.pile_dragged_from][-1][3]:
+                                self.piles[self.pile_dragged_from][-1][3] = False
+                            break
+
+                        elif (slot[-1][1][1] == self.held_cards[0][1][1] - 1) and (slot[-1][1][0] == self.held_cards[0][1][0]):
+
+                            slot.append(self.held_cards[0])
+                            self.held_cards = []
+
+                            if len(self.piles[self.pile_dragged_from]) > 0 and self.piles[self.pile_dragged_from][-1][3]:
+                                self.piles[self.pile_dragged_from][-1][3] = False
+                            break
+
+
+    def can_place(self, card, pile_number):
+
+        if len(self.held_cards) > 0 and card[1][1] - 1 == self.held_cards[0][1][1]:
+
+            if (card[1][0] == "diamonds" or card[1][0] == "hearts") and (self.held_cards[0][1][0] == "spades" or self.held_cards[0][1][0] == "clubs"):
+                return True
+            if (card[1][0] == "spades" or card[1][0] == "clubs") and (self.held_cards[0][1][0] == "diamonds" or self.held_cards[0][1][0] == "hearts"):
+                return True
+            
+        elif pile_number == self.pile_number:
+            return True
+                
+        return False
+    
+    #def can_place_on_top_deck(card):
+
+
+            
 
     def draw(self):
 
