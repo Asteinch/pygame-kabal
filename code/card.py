@@ -2,6 +2,7 @@ import pygame
 import re
 import random
 import os
+import time
 
 class Card:
 
@@ -13,6 +14,9 @@ class Card:
         self.piles = [[], [], [], [], [], [], []]
         self.deck =[]
         self.held_cards = []
+        self.pile_is_empty = [pygame.Rect(0,0,0,0),pygame.Rect(0,0,0,0),pygame.Rect(0,0,0,0),pygame.Rect(0,0,0,0),pygame.Rect(0,0,0,0),pygame.Rect(0,0,0,0),pygame.Rect(0,0,0,0),pygame.Rect(0,0,0,0)]
+
+        self.pile_dragged_from = int
 
         self.back_card = pygame.image.load("images/h96/upscaled/backbluepattern.png")
         self.empty_tile = pygame.image.load("images/h96/upscaled/emptytile.png")
@@ -21,20 +25,58 @@ class Card:
         self.shuffle()
         self.deal_cards()
 
+
+    def get_value_and_type(self, name):
+
+        icons = ["diamonds", "spades", "hearts", "clubs"]
+
+        value = self.extract_number(name)
+
+        for icon in icons:
+            if icon in name:
+
+                return (icon, value)
+
+    def get_all_cards(self):
+
+        for filename in os.listdir("images/h96/upscaled"):
+
+            if filename != "backbluepattern.png" and filename != "emptytile.png":
+
+                self.all_cards.append(
+                    [pygame.image.load("images/h96/upscaled/" + filename),
+                    (self.get_value_and_type(filename)),
+                    pygame.Rect(0, 0, 0, 0),
+                    True]
+                    )
+                
+    def get_card_hitbox(self, x, y, pile, card):
+            
+        return pygame.Rect(x, y, 104, 30) if card != pile[-1] else pygame.Rect(x, y, 106, 144)
     
     def extract_number(self, filename):
-        # skrevet av chatgpt fordi jeg kan ikke programmere
 
-        pattern = r'\d+' 
-        match = re.search(pattern, filename)
-        
-        if match:
-            value = int(match.group())
-            return value
-        else:
-            return None
-        
-    def draw_held_cards(self):
+        return int((re.search(r'\d+', filename)).group()) if re.search(r'\d+', filename) else None
+
+    def shuffle(self):
+
+        random.shuffle(self.all_cards)
+
+    def deal_cards(self):
+
+        for i in range (1, 7 + 1):
+            for e in range(i):
+
+                current_card = random.choice(self.all_cards)
+                self.piles[i - 1].append(current_card)
+                self.all_cards.remove(current_card)
+
+        self.deck = self.all_cards
+
+        for pile in self.piles:
+            pile[-1][3] = False
+
+    def print_held_cards(self):
 
         pos = pygame.mouse.get_pos()
 
@@ -49,118 +91,36 @@ class Card:
                 y_increase += 30
 
 
-    def get_value_and_type(self, name):
-
-        # finner kort type og verdi fra filnavnet til bilde gitt
-
-        icons = ["diamonds", "spades", "hearts", "clubs"]
-
-        value = self.extract_number(name)
-
-        for icon in icons:
-            if icon in name:
-
-                return (icon, value)
-
-    def get_all_cards(self):
-
-        # henter alle kort bildene og legger de i en liste med bilde, korttype og verdi
-
-        for filename in os.listdir("images/h96/upscaled"):
-
-            if filename != "backbluepattern.png" and filename != "emptytile.png":
-
-                self.all_cards.append(
-                    [pygame.image.load("images/h96/upscaled/" + filename),
-                    (self.get_value_and_type(filename)),
-                    pygame.Rect(0, 0, 0, 0)]
-                    )
-
-
-
-    def shuffle(self):
-
-        random.shuffle(self.all_cards)
-
-    def deal_cards(self):
-
-        # henter tilfeldige kort fra kortstokken og legger de i en egen liste og fjerner kortene fra dekk listen
-
-        card_pile_length = 1
-
-        for i in range (1, 7 + 1):
-
-            for e in range(card_pile_length):
-
-                current_card = random.choice(self.all_cards)
-                self.piles[i - 1].append(current_card)
-                self.all_cards.remove(current_card)
-
-            card_pile_length += 1
-
-        self.deck = self.all_cards
-
-        #print(self.piles)
-
-
     def print_top_decks(self):
-
-        # Viser kortene som er bunket på toppen
 
         pos_x = 675
 
         for i in range(4):
 
             self.win.blit(self.empty_tile, (pos_x, 30))
-
             pos_x += 100 + 25
-
-    def get_card_hitbox(self, x, y, pile, card):
-
-        # Legger inn posisjonenene til alle kortene spillern kan påvirke
-
-
-        if card != pile[-1]:
-            return pygame.Rect(x, y, 104, 30)      
-        else: 
-
-            #print(pile, piles[-1])
-
-            return pygame.Rect(x, y, 106, 144)
-
 
     def print_piles(self):
 
-        # Viser spillern kortene de spiller med
+        print_x, print_y = 300, 200
 
-        print_x = 300
-        print_y = 200
-
-        for pile in self.piles:
-
+        for pile_index, pile in enumerate(self.piles):
             print_y = 200
+
+            if len(pile) == 0:
+
+                self.pile_is_empty[pile_index] = pygame.Rect(print_x, print_y, 106, 144)
+                self.win.blit(self.empty_tile, (print_x, print_y))
 
             for card in pile:
 
-                """"
-                dette er for å sjule kortene som ikke er fremst i rekken, brukes ikke for øyeblikket
-                
-
-                if len(pile) > 0 and card != pile[-1]:
-
-                    self.win.blit(self.back_card, (print_x, print_y))
-                
-                else:
-                """
-
-    
-                self.win.blit(card[0], (print_x, print_y))
-
                 card[2] = self.get_card_hitbox(print_x, print_y, pile, card)
 
-                print_y += 30
+                self.win.blit(self.back_card, (print_x, print_y)) if card[3] else self.win.blit(card[0], (print_x, print_y))
 
+                print_y += 30
             print_x += 125
+
 
     def pick_up_cards(self):
 
@@ -169,51 +129,55 @@ class Card:
         if len(self.held_cards) == 0:
 
             pos = pygame.mouse.get_pos()
-            pile_number = 0
 
-            for pile in self.piles:
+            for pile_number, pile in enumerate(self.piles):
                 for card in pile:
 
-                    if card[2].collidepoint(pos):
+                    if card[2].collidepoint(pos) and card[3] == False:
 
                         if len(self.held_cards) == 0:
 
-                            # fjerner kortet og alle kortene under som spillern har valgt fra pile listen og legger de til held card listen
 
                             index_of_card = pile.index(card)
                             self.held_cards = [inner_list for inner_list in pile[index_of_card:]]
 
                             self.piles[pile_number] = [card for card in pile if card not in self.held_cards]
+
+                            self.pile_dragged_from = pile_number
                             
-                pile_number += 1
 
     def drop_cards(self):
-
-        # Slipper kortene på den bunken spillern har trykket på
 
         if len(self.held_cards) > 0:
 
             pos = pygame.mouse.get_pos()
-            pile_number = 0
 
-            for pile in self.piles:
+            for hitbox_index, hitbox in enumerate(self.pile_is_empty):
+                if hitbox.collidepoint(pos) and self.held_cards[0][1][1] == 13:
+
+                    self.piles[hitbox_index].extend(self.held_cards)
+                    self.held_cards = []
+                    self.pile_is_empty[hitbox_index] = pygame.Rect(0,0,0,0)
+
+                    if len(self.piles[self.pile_dragged_from]) > 0 and self.piles[self.pile_dragged_from][-1][3]:
+                        self.piles[self.pile_dragged_from][-1][3] = False
+
+                    return False
+                
+            for pile_number, pile in enumerate(self.piles):
                 for card in pile:
-
                     if card[2].collidepoint(pos):
 
-                        for held_card in self.held_cards:
-
-                            self.piles[pile_number].append(held_card)
-
+                        self.piles[pile_number].extend(self.held_cards)
                         self.held_cards = []
 
-                pile_number += 1
+                        if len(self.piles[self.pile_dragged_from]) > 0 and self.piles[self.pile_dragged_from][-1][3]:
+                            self.piles[self.pile_dragged_from][-1][3] = False
 
-            
     def draw(self):
 
         self.print_piles()
         self.print_top_decks()
-        self.draw_held_cards()
+        self.print_held_cards()
 
     
