@@ -19,23 +19,41 @@ class Game:
     def update(self):
         pygame.display.update()
 
+        self.clock.tick(30)
+
     def check_for_events(self):
         for event in pygame.event.get():
             
             if event.type == pygame.QUIT:
                 quit()
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            if not self.Cards.check_for_win():
 
-                self.Cards.pick_up_cards()
+                if event.type == pygame.MOUSEBUTTONDOWN:
 
-                self.Cards.drop_cards()
+                    if self.Cards.pick_up_cards():
+                        break
+
+                    if self.Cards.drop_cards():
+                        break
+
+                    if self.Cards.pick_from_deck():
+                        break
+                
+            else:
+
+                pygame.display.set_caption("Won")
+
 
     def main_loop(self):
         while True:
             self.draw()
             self.update()
             self.check_for_events()
+
+            if self.Cards.check_for_win():
+
+                print("w")
 
 if __name__ == "__main__":
 
