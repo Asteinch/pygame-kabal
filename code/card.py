@@ -3,8 +3,6 @@ import re
 import random
 import os
 
-import copy
-
 class Card:
 
     def __init__(self, game):
