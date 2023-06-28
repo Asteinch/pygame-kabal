@@ -3,6 +3,8 @@ import re
 import random
 import os
 
+import copy
+
 class Card:
 
     def __init__(self, game):
@@ -147,12 +149,28 @@ class Card:
         if len(self.deck_opened) == 0:
             self.win.blit((pygame.image.load("images/h96/upscaled/restock.png")), (430, 30))
         else:
-            self.win.blit((self.deck_opened[-1][0]), (430, 30))
+
+            x_increase = 0
+
+            for i in reversed(range(1, (3 if len(self.deck_opened) >= 3 else len(self.deck_opened)) + 1)):
+
+                self.win.blit((self.deck_opened[-i][0]), (430 + x_increase, 30))
+                self.deck_opened[-i][2] = pygame.Rect(430 + x_increase, 30, 106, 144)
+                x_increase += 30
 
         if len(self.deck) == 0:
             self.win.blit((pygame.image.load("images/h96/upscaled/restock.png")), (300, 30))
         else:
             self.win.blit(self.back_card, (300, 30))
+
+    def test_print(self):
+
+        x=0
+
+        for card in self.deck_opened:
+
+            self.win.blit(card[0], (x, 700))
+            x+=30
 
 # ------------- Pårvirkes
 
@@ -164,16 +182,28 @@ class Card:
 
             if len(self.deck_opened) > 0 and self.deck_opened[-1][2].collidepoint(pos):
 
-                self.held_cards.append(self.deck_opened[-1])
+                self.held_cards.append(self.deck_opened.pop())
                 self.deck_dragged_from = self.deck_opened[-1]
-                self.deck_opened.remove(self.deck_opened[-1])
                 return True
 
             if len(self.deck) > 0 and pygame.Rect(300, 30, 106, 144).collidepoint(pos):
 
-                self.deck_opened.append(self.deck[-1])
-                self.deck.remove(self.deck[-1])
-                self.deck_opened[-1][2] = pygame.Rect(430, 30, 106, 144)
+                num_cards_to_draw = min(3, len(self.deck))
+
+                for _ in range(num_cards_to_draw):
+
+                    if len(self.deck) == 0:
+                        self.deck_opened.reverse()
+                        self.deck = self.deck_opened
+                        self.deck_opened = []
+
+                    self.deck_opened.append(self.deck[-1])
+                    self.deck.remove(self.deck[-1])
+                    self.deck_opened[-1][2] = pygame.Rect(430, 30, 106, 144)
+
+                if num_cards_to_draw != 3:
+                    print(self.deck_opened)
+
                 return True
             
             if len(self.deck) == 0 and pygame.Rect(300, 30, 106, 144).collidepoint(pos):
@@ -272,7 +302,6 @@ class Card:
 
                 return True
 
-
 # ------------- Status og Bekreftning
 
     def can_place(self, card, pile_number):
@@ -303,5 +332,7 @@ class Card:
         self.print_top_decks()
         self.print_deck()
         self.print_held_cards()
+
+        self.test_print()
 
     
