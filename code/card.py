@@ -11,8 +11,8 @@ class Card:
 
         self.all_cards = []
         self.piles = [[], [], [], [], [], [], []]
-        self.deck =[]
-        self.deck_opened =[]
+        self.deck = []
+        self.deck_opened = []
         
         self.held_cards = []
 
