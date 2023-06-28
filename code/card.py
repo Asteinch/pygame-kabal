@@ -26,8 +26,8 @@ class Card:
         self.pile_dragged_from = -1
         self.deck_dragged_from = False
 
-        self.back_card = pygame.image.load("images/upscaled/backbluepattern.png")
-        self.empty_tile = pygame.image.load("images/upscaled/emptytile.png")
+        self.back_card = pygame.image.load("images/kort/backbluepattern.png")
+        self.empty_tile = pygame.image.load("images/kort/emptytile.png")
 
         self.top_decks = [[[self.empty_tile, ["0", 0], pygame.Rect(675, 30, 106, 144)]], 
                           [[self.empty_tile, ["0", 0], pygame.Rect(800, 30, 106, 144)]], 
@@ -53,12 +53,12 @@ class Card:
 
     def get_all_cards(self):
 
-        for filename in os.listdir("images/upscaled"):
+        for filename in os.listdir("images/kort"):
 
             if filename != "backbluepattern.png" and filename != "emptytile.png" and filename != "restock.png":
 
                 self.all_cards.append(
-                    [pygame.image.load("images/upscaled/" + filename),
+                    [pygame.image.load("images/kort/" + filename),
                     (self.get_value_and_type(filename)),
                     pygame.Rect(0, 0, 0, 0),
                     True]
@@ -145,7 +145,7 @@ class Card:
     def print_deck(self):
 
         if len(self.deck_opened) == 0:
-            self.win.blit((pygame.image.load("images/upscaled/restock.png")), (430, 30))
+            self.win.blit((pygame.image.load("images/kort/restock.png")), (430, 30))
         else:
 
             x_increase = 0
@@ -157,7 +157,7 @@ class Card:
                 x_increase += 30
 
         if len(self.deck) == 0:
-            self.win.blit((pygame.image.load("images/upscaled/restock.png")), (300, 30))
+            self.win.blit((pygame.image.load("images/kort/restock.png")), (300, 30))
         else:
             self.win.blit(self.back_card, (300, 30))
 
