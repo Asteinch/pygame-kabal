@@ -31,13 +31,15 @@ class Game:
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
 
-                    if self.Cards.pick_up_cards():
+                    pos = pygame.mouse.get_pos()
+
+                    if self.Cards.pick_up_cards(pos):
                         continue
 
-                    if self.Cards.drop_cards():
+                    if self.Cards.drop_cards(pos):
                         continue
 
-                    if self.Cards.pick_from_deck():
+                    if self.Cards.pick_from_deck(pos):
                         continue
                 
             else:

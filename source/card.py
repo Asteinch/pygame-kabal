@@ -9,18 +9,6 @@ class Card:
 
         self.win = game.win
 
-        self.all_cards = []
-        self.piles = [[], [], [], [], [], [], []]
-        self.deck = []
-        self.deck_opened = []
-        
-        self.held_cards = []
-
-        self.top_decks = [[], [], [], []]
-
-        self.pile_is_empty = [pygame.Rect(0,0,0,0),pygame.Rect(0,0,0,0),pygame.Rect(0,0,0,0),pygame.Rect(0,0,0,0),pygame.Rect(0,0,0,0),pygame.Rect(0,0,0,0),pygame.Rect(0,0,0,0),pygame.Rect(0,0,0,0)]
-        self.from_pile_hitbox = pygame.Rect(0,0,0,0)
-
         self.pile_number = 0
 
         self.pile_dragged_from = -1
@@ -29,10 +17,20 @@ class Card:
         self.back_card = pygame.image.load("images/kort/backbluepattern.png")
         self.empty_tile = pygame.image.load("images/kort/emptytile.png")
 
+        self.held_cards = []
+
+        self.all_cards = []
+        self.deck = []
+        self.deck_opened = []
+
+        self.piles = [[], [], [], [], [], [], []]
+
         self.top_decks = [[[self.empty_tile, ["0", 0], pygame.Rect(675, 30, 106, 144)]], 
                           [[self.empty_tile, ["0", 0], pygame.Rect(800, 30, 106, 144)]], 
                           [[self.empty_tile, ["0", 0], pygame.Rect(925, 30, 106, 144)]], 
                           [[self.empty_tile, ["0", 0], pygame.Rect(1050, 30, 106, 144)]]]
+
+        self.pile_is_empty = [False, False, False, False, False, False, False]
 
         self.get_all_cards()
         self.shuffle()
@@ -44,7 +42,7 @@ class Card:
 
         icons = ["diamonds", "spades", "hearts", "clubs"]
 
-        value = self.extract_number(name)
+        value = int((re.search(r'\d+', name)).group())
 
         for icon in icons:
             if icon in name:
@@ -67,10 +65,6 @@ class Card:
     def get_card_hitbox(self, x, y, pile, card):
             
         return pygame.Rect(x, y, 106, 30) if card != pile[-1] else pygame.Rect(x, y, 106, 144)
-    
-    def extract_number(self, filename):
-
-        return int((re.search(r'\d+', filename)).group()) if re.search(r'\d+', filename) else None
 
     def shuffle(self):
 
@@ -78,12 +72,12 @@ class Card:
 
     def deal_cards(self):
 
-        for i in range (1, 7 + 1):
-            for e in range(i):
+        for col in range (1, 7 + 1):
+            for e in range(col):
 
-                current_card = random.choice(self.all_cards)
-                self.piles[i - 1].append(current_card)
-                self.all_cards.remove(current_card)
+                current_card = self.all_cards[-1]#random.choice(self.all_cards)
+                self.piles[col - 1].append(current_card)
+                self.all_cards.pop(-1)
 
         self.deck = self.all_cards
 
@@ -161,24 +155,13 @@ class Card:
         else:
             self.win.blit(self.back_card, (300, 30))
 
-    def test_print(self):
-
-        x=0
-
-        for card in self.deck_opened:
-
-            self.win.blit(card[0], (x, 700))
-            x+=30
-
 # ------------- Pårvirkes
 
-    def pick_from_deck(self):
-
-        pos = pygame.mouse.get_pos()
+    def pick_from_deck(self, pos):
 
         if len(self.held_cards) == 0:
 
-            if len(self.deck_opened) > 0 and self.deck_opened[-1][2].collidepoint(pos):
+            if len(self.deck_opened) > 0 and self.deck_opened[-1][2].collidepoint(pos): # Plukker opp kort fra bunken
 
                 self.held_cards.append(self.deck_opened.pop())
                 if len(self.deck_opened) != 0:
@@ -187,7 +170,7 @@ class Card:
                     self.deck_dragged_from = True
                 return True
 
-            if len(self.deck) > 0 and pygame.Rect(300, 30, 106, 144).collidepoint(pos):
+            if len(self.deck) > 0 and pygame.Rect(300, 30, 106, 144).collidepoint(pos): # Trekker kort fra bunken
 
                 num_cards_to_draw = min(3, len(self.deck))
 
@@ -202,28 +185,23 @@ class Card:
                     self.deck.remove(self.deck[-1])
                     self.deck_opened[-1][2] = pygame.Rect(430, 30, 106, 144)
 
-
                 return True
             
-            if len(self.deck) == 0 and pygame.Rect(300, 30, 106, 144).collidepoint(pos):
+            if len(self.deck) == 0 and pygame.Rect(300, 30, 106, 144).collidepoint(pos): # Stokker om kortene hvis de er tomme
 
                 self.deck_opened.reverse()
                 self.deck = self.deck_opened
                 self.deck_opened = []           
                 return True
             
-    def pick_up_cards(self):
-
-        # sjekker alle kort og om spillern prøver å plukke de opp, hvis så vil kortene bli plukket opp
+    def pick_up_cards(self, pos):
 
         if len(self.held_cards) == 0:
-
-            pos = pygame.mouse.get_pos()
 
             for pile_number, pile in enumerate(self.piles):
                 for card in pile:
 
-                    if card[2].collidepoint(pos) and card[3] == False: #and not pygame.Rect(430, 30, 106, 144).collidepoint(pos):
+                    if card[2].collidepoint(pos) and card[3] == False: # Plukker kort fra haugene hvis de er åpne
                         if len(self.held_cards) == 0:
 
                             index_of_card = pile.index(card)
@@ -234,24 +212,22 @@ class Card:
 
                             return True
                  
-            for top_deck_number, slot in enumerate(self.top_decks):
+            for col in self.top_decks:
 
-                if slot[0][2].collidepoint(pos) and len(slot) != 1:
+                if col[0][2].collidepoint(pos) and len(col) != 1: # Plukker kort fra toppbunkene
 
-                    self.held_cards.append(slot[-1])
-                    slot.pop(-1)
+                    self.held_cards.append(col[-1])
+                    col.pop(-1)
 
                     return True
                     
-    def drop_cards(self):
+    def drop_cards(self, pos):
 
         if len(self.held_cards) > 0:
 
-            pos = pygame.mouse.get_pos()
-
             for hitbox_index, hitbox in enumerate(self.pile_is_empty):
-                if (hitbox.collidepoint(pos)) and (self.held_cards[0][1][1] == 13 or (hitbox_index == self.pile_number and self.deck_dragged_from == False)):
-                    # for tomme bunker 
+                if (hitbox != False and hitbox.collidepoint(pos)) and (self.held_cards[0][1][1] == 13 or (hitbox_index == self.pile_number and self.deck_dragged_from == False)):
+                    # Slipper kort på tomme hauger, kun hvis det er en konge eller kortet blir flyttet til orginal plass
                     
                     self.piles[hitbox_index].extend(self.held_cards)
                     self.held_cards = []
@@ -265,9 +241,9 @@ class Card:
                 
             for pile_number, pile in enumerate(self.piles):
                 for card in pile:
-                    # for vanlig plasseringer
 
                     if card[2].collidepoint(pos) and (self.can_place(card, pile_number) == True):
+                        # Slipper korte(ne) på bestemt haug
 
                         self.piles[pile_number].extend(self.held_cards)
                         self.held_cards = []
@@ -279,9 +255,9 @@ class Card:
                 
             if len(self.held_cards) == 1:
                 for index, slot in enumerate(self.top_decks):
-                    # for toppbunkene
-
+    
                     if slot[0][2].collidepoint(pos):
+                        # Slipper kort på toppbunkene hvis det er en Ace eller 1 + kortet under
 
                         if slot[0][1][1] == 0 and self.held_cards[0][1][1] == 1:
 
@@ -305,6 +281,7 @@ class Card:
                 
                 
             if pygame.Rect(430, 30, 106, 144).collidepoint(pos) and (self.deck_dragged_from or self.deck_opened[-1] == self.deck_dragged_from):
+                # Slipper kort tilbake til bunken
 
                 self.deck_opened.append(self.held_cards[0])
                 self.held_cards = []           
@@ -340,7 +317,4 @@ class Card:
         self.print_top_decks()
         self.print_deck()
         self.print_held_cards()
-
-        self.test_print()
-
     
