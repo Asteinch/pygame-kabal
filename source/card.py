@@ -89,6 +89,20 @@ class Card:
         for pile in self.piles:
             pile[-1][3] = False
 
+    def reuse_cards_from_deck(self):
+
+        if len(self.deck) == 0:
+
+            self.deck_opened.reverse()
+            self.deck = self.deck_opened
+            self.deck_opened = []
+
+    def pick_cards_from_deck(self):
+
+        self.deck_opened.append(self.deck[-1])
+        self.deck.remove(self.deck[-1])
+        self.deck_opened[-1][2] = pygame.Rect(430, 30, 106, 144)
+
 # ------------- Grafikk
 
     def print_held_cards(self):
@@ -101,7 +115,7 @@ class Card:
 
             for card in self.held_cards:
 
-                self.win.blit(card[0], (pos[0], pos[1] + y_increase))
+                self.win.blit(card[0], (pos[0] - 53, pos[1] + y_increase - 50))
 
                 y_increase += 30
 
@@ -155,6 +169,13 @@ class Card:
         else:
             self.win.blit(self.back_card, (300, 30))
 
+    def print_test_piles(self):
+
+        x_increase = 0
+        for card in self.deck_opened:
+            self.win.blit(card[0], (x_increase, 800 - 144))
+            x_increase += 30
+
 # ------------- Pårvirkes
 
     def pick_from_deck(self, pos):
@@ -172,26 +193,40 @@ class Card:
 
             if len(self.deck) > 0 and pygame.Rect(300, 30, 106, 144).collidepoint(pos): # Trekker kort fra bunken
 
+                temp_opened = []
+
                 num_cards_to_draw = min(3, len(self.deck))
 
                 for _ in range(num_cards_to_draw):
 
                     if len(self.deck) == 0:
-                        self.deck_opened.reverse()
-                        self.deck = self.deck_opened
-                        self.deck_opened = []
 
-                    self.deck_opened.append(self.deck[-1])
-                    self.deck.remove(self.deck[-1])
-                    self.deck_opened[-1][2] = pygame.Rect(430, 30, 106, 144)
+                        self.reuse_cards_from_deck()
 
+                    self.pick_cards_from_deck()
+    
+                remaining_cards = 3 - num_cards_to_draw
+                if remaining_cards > 0:
+
+                    for _ in range(num_cards_to_draw):
+                        temp_opened.append(self.deck_opened.pop())
+
+                    self.reuse_cards_from_deck()
+
+                    for card in temp_opened:
+                        self.deck_opened.append(card)
+    
+                    for _ in range(remaining_cards):
+
+                        self.pick_cards_from_deck()
+                        
                 return True
+
             
             if len(self.deck) == 0 and pygame.Rect(300, 30, 106, 144).collidepoint(pos): # Stokker om kortene hvis de er tomme
 
-                self.deck_opened.reverse()
-                self.deck = self.deck_opened
-                self.deck_opened = []           
+                self.reuse_cards_from_deck()
+                 
                 return True
             
     def pick_up_cards(self, pos):
@@ -317,4 +352,5 @@ class Card:
         self.print_top_decks()
         self.print_deck()
         self.print_held_cards()
+        self.print_test_piles()
     
