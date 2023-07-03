@@ -169,13 +169,6 @@ class Card:
         else:
             self.win.blit(self.back_card, (300, 30))
 
-    def print_test_piles(self):
-
-        x_increase = 0
-        for card in self.deck_opened:
-            self.win.blit(card[0], (x_increase, 800 - 144))
-            x_increase += 30
-
 # ------------- Pårvirkes
 
     def pick_from_deck(self, pos):
@@ -183,6 +176,8 @@ class Card:
         if len(self.held_cards) == 0:
 
             if len(self.deck_opened) > 0 and self.deck_opened[-1][2].collidepoint(pos): # Plukker opp kort fra bunken
+                
+                self.pile_dragged_from = -1
 
                 self.held_cards.append(self.deck_opened.pop())
                 if len(self.deck_opened) != 0:
@@ -280,6 +275,8 @@ class Card:
                     if card[2].collidepoint(pos) and (self.can_place(card, pile_number) == True):
                         # Slipper korte(ne) på bestemt haug
 
+                        #for _ in self.held_cards:
+                            #self.piles[pile_number].append(_)
                         self.piles[pile_number].extend(self.held_cards)
                         self.held_cards = []
 
@@ -315,7 +312,7 @@ class Card:
                         return True
                 
                 
-            if pygame.Rect(430, 30, 106, 144).collidepoint(pos) and (self.deck_dragged_from or self.deck_opened[-1] == self.deck_dragged_from):
+            if pygame.Rect(430, 30, 106, 144).collidepoint(pos) and (self.pile_dragged_from == -1) and (len(self.held_cards) == 1):
                 # Slipper kort tilbake til bunken
 
                 self.deck_opened.append(self.held_cards[0])
@@ -327,6 +324,11 @@ class Card:
 
     def can_place(self, card, pile_number):
 
+        print("pile: ", self.pile_number)
+        print("dragged: ", self.pile_dragged_from)
+
+
+
         if len(self.held_cards) > 0 and card[1][1] - 1 == self.held_cards[0][1][1]:
 
             if (card[1][0] == "diamonds" or card[1][0] == "hearts") and (self.held_cards[0][1][0] == "spades" or self.held_cards[0][1][0] == "clubs"):
@@ -334,8 +336,10 @@ class Card:
             if (card[1][0] == "spades" or card[1][0] == "clubs") and (self.held_cards[0][1][0] == "diamonds" or self.held_cards[0][1][0] == "hearts"):
                 return True
             
-        elif pile_number == self.pile_dragged_from:
-            return True                
+        if pile_number == self.pile_dragged_from:
+            print("cock")
+            return True  
+                      
         return False
     
     def check_for_win(self):
@@ -352,5 +356,4 @@ class Card:
         self.print_top_decks()
         self.print_deck()
         self.print_held_cards()
-        self.print_test_piles()
     
