@@ -1,4 +1,4 @@
-import pygame
+import pygame, sys
 
 from source.card import Card
 
@@ -25,7 +25,7 @@ class Game:
         for event in pygame.event.get():
             
             if event.type == pygame.QUIT:
-                quit()
+                sys.exit()
 
             if not self.Cards.check_for_win():
 
