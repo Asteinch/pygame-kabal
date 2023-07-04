@@ -115,7 +115,7 @@ class Card:
 
             for card in self.held_cards:
 
-                self.win.blit(card[0], (pos[0] - 53, pos[1] + y_increase - 50))
+                self.win.blit(card[0], (pos[0] - 53, pos[1] + y_increase - 15))
 
                 y_increase += 30
 
@@ -256,7 +256,7 @@ class Card:
         if len(self.held_cards) > 0:
 
             for hitbox_index, hitbox in enumerate(self.pile_is_empty):
-                if (hitbox != False and hitbox.collidepoint(pos)) and (self.held_cards[0][1][1] == 13 or (hitbox_index == self.pile_number and self.deck_dragged_from == False)):
+                if (hitbox != False and hitbox.collidepoint(pos)) and (self.held_cards[0][1][1] == 13 or (hitbox_index == self.pile_dragged_from)):
                     # Slipper kort på tomme hauger, kun hvis det er en konge eller kortet blir flyttet til orginal plass
                     
                     self.piles[hitbox_index].extend(self.held_cards)
@@ -284,6 +284,8 @@ class Card:
                             self.piles[self.pile_dragged_from][-1][3] = False
 
                         return True
+                    
+
                 
             if len(self.held_cards) == 1:
                 for index, slot in enumerate(self.top_decks):
@@ -327,18 +329,16 @@ class Card:
         print("pile: ", self.pile_number)
         print("dragged: ", self.pile_dragged_from)
 
-
+        if pile_number == self.pile_dragged_from:
+            print("cock")
+            return True  
 
         if len(self.held_cards) > 0 and card[1][1] - 1 == self.held_cards[0][1][1]:
-
+                
             if (card[1][0] == "diamonds" or card[1][0] == "hearts") and (self.held_cards[0][1][0] == "spades" or self.held_cards[0][1][0] == "clubs"):
                 return True
             if (card[1][0] == "spades" or card[1][0] == "clubs") and (self.held_cards[0][1][0] == "diamonds" or self.held_cards[0][1][0] == "hearts"):
                 return True
-            
-        if pile_number == self.pile_dragged_from:
-            print("cock")
-            return True  
                       
         return False
     

@@ -5,7 +5,7 @@ from source.card import Card
 class Game:
     def __init__(self):
         self.win = pygame.display.set_mode((1200, 800))
-        pygame.display.set_caption("Kabal")
+        pygame.display.set_caption("Solitaire")
         self.clock = pygame.time.Clock()
         self.new_game()
 
