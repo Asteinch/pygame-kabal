@@ -192,6 +192,7 @@ class Card:
 
                 num_cards_to_draw = min(3, len(self.deck))
 
+
                 for _ in range(num_cards_to_draw):
 
                     if len(self.deck) == 0:
@@ -205,15 +206,17 @@ class Card:
 
                     for _ in range(num_cards_to_draw):
                         temp_opened.append(self.deck_opened.pop())
-
+                                            
                     self.reuse_cards_from_deck()
 
                     for card in temp_opened:
                         self.deck_opened.append(card)
-    
-                    for _ in range(remaining_cards):
 
-                        self.pick_cards_from_deck()
+                    if len(self.deck) > 0:
+    
+                        for _ in range(remaining_cards):
+
+                            self.pick_cards_from_deck()
                         
                 return True
 
@@ -275,8 +278,6 @@ class Card:
                     if card[2].collidepoint(pos) and (self.can_place(card, pile_number) == True):
                         # Slipper korte(ne) på bestemt haug
 
-                        #for _ in self.held_cards:
-                            #self.piles[pile_number].append(_)
                         self.piles[pile_number].extend(self.held_cards)
                         self.held_cards = []
 
@@ -326,11 +327,7 @@ class Card:
 
     def can_place(self, card, pile_number):
 
-        print("pile: ", self.pile_number)
-        print("dragged: ", self.pile_dragged_from)
-
         if pile_number == self.pile_dragged_from:
-            print("cock")
             return True  
 
         if len(self.held_cards) > 0 and card[1][1] - 1 == self.held_cards[0][1][1]:
