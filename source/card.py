@@ -43,7 +43,7 @@ class Card:
         self.shuffle()
         self.deal_cards()
 
-# ------------ Klargjøring og Data
+# ------------ Preparation for game start and Data
 
     def get_value_and_type(self, name):
 
@@ -116,7 +116,7 @@ class Card:
         self.deck.remove(self.deck[-1])
         self.deck_opened[-1][2] = pygame.Rect(430, 30, 106, 144)
 
-# ------------- Grafikk
+# ------------- Graphics 
 
     def print_held_cards(self):
         # draws card the player is holding
@@ -188,7 +188,7 @@ class Card:
         else:
             self.win.blit(self.back_card, (300, 30))
 
-# ------------- Pårvirkes
+# ------------- Interaction and Gameplay
 
     def pick_from_deck(self, pos):
 
@@ -365,7 +365,7 @@ class Card:
 
                 return True
 
-# ------------- Status og Bekreftning
+# ------------- Status and Confirmation
 
     def can_place(self, card, pile_number):
 
