@@ -45,6 +45,7 @@ class Game:
             else:
 
                 pygame.display.set_caption("Won")
+                pygame.mixer.Sound.play(self.Cards.sounds[4])
 
 
     def main_loop(self):

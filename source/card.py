@@ -3,6 +3,8 @@ import re
 import random
 import os
 
+pygame.mixer.init()
+
 class Card:
 
     def __init__(self, game):
@@ -31,6 +33,12 @@ class Card:
                           [[self.empty_tile, ["0", 0], pygame.Rect(1050, 30, 106, 144)]]]
 
         self.pile_is_empty = [False, False, False, False, False, False, False]
+
+        self.sounds = [pygame.mixer.Sound("./sounds/pick_up.wav"), 
+                       pygame.mixer.Sound("./sounds/drop_card.wav"), 
+                       pygame.mixer.Sound("./sounds/pick_from_deck.wav"), 
+                       pygame.mixer.Sound("./sounds/reuse_deck.wav"),
+                       pygame.mixer.Sound("./sounds/win.wav")]
 
         self.get_all_cards()
         self.shuffle()
@@ -75,7 +83,7 @@ class Card:
         for col in range (1, 7 + 1):
             for e in range(col):
 
-                current_card = self.all_cards[-1]#random.choice(self.all_cards)
+                current_card = self.all_cards[-1]
                 self.piles[col - 1].append(current_card)
                 self.all_cards.pop(-1)
 
@@ -90,6 +98,8 @@ class Card:
             pile[-1][3] = False
 
     def reuse_cards_from_deck(self):
+
+        pygame.mixer.Sound.play(self.sounds[3])
 
         if len(self.deck) == 0:
 
@@ -175,8 +185,10 @@ class Card:
 
         if len(self.held_cards) == 0:
 
-            if len(self.deck_opened) > 0 and self.deck_opened[-1][2].collidepoint(pos): # Plukker opp kort fra bunken
+            if len(self.deck_opened) > 0 and self.deck_opened[-1][2].collidepoint(pos): 
                 
+                pygame.mixer.Sound.play(self.sounds[0])
+
                 self.pile_dragged_from = -1
 
                 self.held_cards.append(self.deck_opened.pop())
@@ -186,12 +198,12 @@ class Card:
                     self.deck_dragged_from = True
                 return True
 
-            if len(self.deck) > 0 and pygame.Rect(300, 30, 106, 144).collidepoint(pos): # Trekker kort fra bunken
+            if len(self.deck) > 0 and pygame.Rect(300, 30, 106, 144).collidepoint(pos): 
+
+                pygame.mixer.Sound.play(self.sounds[2])
 
                 temp_opened = []
-
                 num_cards_to_draw = min(3, len(self.deck))
-
 
                 for _ in range(num_cards_to_draw):
 
@@ -221,7 +233,7 @@ class Card:
                 return True
 
             
-            if len(self.deck) == 0 and pygame.Rect(300, 30, 106, 144).collidepoint(pos): # Stokker om kortene hvis de er tomme
+            if len(self.deck) == 0 and pygame.Rect(300, 30, 106, 144).collidepoint(pos): # Reuses the deck whenever the deck runs out of cards
 
                 self.reuse_cards_from_deck()
                  
@@ -237,6 +249,8 @@ class Card:
                     if card[2].collidepoint(pos) and card[3] == False: # Plukker kort fra haugene hvis de er åpne
                         if len(self.held_cards) == 0:
 
+                            pygame.mixer.Sound.play(self.sounds[0])
+
                             index_of_card = pile.index(card)
                             self.held_cards = [inner_list for inner_list in pile[index_of_card:]]
                             self.piles[pile_number] = [card for card in pile if card not in self.held_cards]
@@ -248,6 +262,8 @@ class Card:
             for col in self.top_decks:
 
                 if col[0][2].collidepoint(pos) and len(col) != 1: # Plukker kort fra toppbunkene
+
+                    pygame.mixer.Sound.play(self.sounds[0])
 
                     self.held_cards.append(col[-1])
                     col.pop(-1)
@@ -262,6 +278,8 @@ class Card:
                 if (hitbox != False and hitbox.collidepoint(pos)) and (self.held_cards[0][1][1] == 13 or (hitbox_index == self.pile_dragged_from)):
                     # Slipper kort på tomme hauger, kun hvis det er en konge eller kortet blir flyttet til orginal plass
                     
+                    pygame.mixer.Sound.play(self.sounds[1])
+
                     self.piles[hitbox_index].extend(self.held_cards)
                     self.held_cards = []
                     self.pile_is_empty[hitbox_index] = pygame.Rect(0,0,0,0)
@@ -278,6 +296,8 @@ class Card:
                     if card[2].collidepoint(pos) and (self.can_place(card, pile_number) == True):
                         # Slipper korte(ne) på bestemt haug
 
+                        pygame.mixer.Sound.play(self.sounds[1])
+
                         self.piles[pile_number].extend(self.held_cards)
                         self.held_cards = []
 
@@ -293,6 +313,8 @@ class Card:
     
                     if slot[0][2].collidepoint(pos):
                         # Slipper kort på toppbunkene hvis det er en Ace eller 1 + kortet under
+
+                        pygame.mixer.Sound.play(self.sounds[1])
 
                         if slot[0][1][1] == 0 and self.held_cards[0][1][1] == 1:
 
@@ -317,6 +339,7 @@ class Card:
                 
             if pygame.Rect(430, 30, 106, 144).collidepoint(pos) and (self.pile_dragged_from == -1) and (len(self.held_cards) == 1):
                 # Slipper kort tilbake til bunken
+                pygame.mixer.Sound.play(self.sounds[1])
 
                 self.deck_opened.append(self.held_cards[0])
                 self.held_cards = []           
@@ -344,7 +367,7 @@ class Card:
         for deck in self.top_decks:
             if len(deck) != 14:
                 return False
-            
+    
         return True
 
     def draw(self):
