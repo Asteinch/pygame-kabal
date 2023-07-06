@@ -82,21 +82,24 @@ class Card:
         for col in range (1, 7 + 1):
             for e in range(col):
 
+                # Adds cards to the pile list using this for loop
                 current_card = self.all_cards[-1]
                 self.piles[col - 1].append(current_card)
                 self.all_cards.pop(-1)
 
+        # Prepears the remaining cards after dealing and adds them to a deck list
         self.deck = self.all_cards
 
         for pile in self.deck:
 
-            pile[2] = pygame.Rect(300, 30, 106, 144) 
-            pile[3] = False
+            pile[2] = pygame.Rect(300, 30, 106, 144) #G ives the cards hitboxes
+            pile[3] = False # 
 
         for pile in self.piles:
-            pile[-1][3] = False
+            pile[-1][3] = False # Makes the front card in a row visable to player (not show backside)
 
     def reuse_cards_from_deck(self):
+        # Reuses the deck if its empty so you can pick more cards
 
         pygame.mixer.Sound.play(self.sounds[3])
 
@@ -107,6 +110,7 @@ class Card:
             self.deck_opened = []
 
     def pick_cards_from_deck(self):
+        # Deals 3 cards to the player, fucntion called when deck is pressed
 
         self.deck_opened.append(self.deck[-1])
         self.deck.remove(self.deck[-1])
@@ -115,9 +119,9 @@ class Card:
 # ------------- Grafikk
 
     def print_held_cards(self):
+        # draws card the player is holding
 
         pos = pygame.mouse.get_pos()
-
         y_increase = 0
 
         if len(self.held_cards) != 0:
@@ -125,20 +129,20 @@ class Card:
             for card in self.held_cards:
 
                 self.win.blit(card[0], (pos[0] - 53, pos[1] + y_increase - 15))
-
                 y_increase += 30
 
     def print_top_decks(self):
+        # draws the ace piles or whatever they called
 
-        pos_x = 675
+        pos_x = 675 
 
         for i in range(4):
 
             self.win.blit(self.top_decks[i][-1][0], (pos_x, 30))
-
             pos_x += 100 + 25
 
     def print_piles(self):
+        # prints the piles 
 
         print_x, print_y = 300, 200
 
@@ -152,14 +156,19 @@ class Card:
 
             for card in pile:
 
+                # gets the cards hitbox based on location
+
                 card[2] = self.get_card_hitbox(print_x, print_y, pile, card)
 
+                # draws the card visable for the cards at the bottom of each pile, else it draws the backside
                 self.win.blit(self.back_card, (print_x, print_y)) if card[3] else self.win.blit(card[0], (print_x, print_y))
 
                 print_y += 30
             print_x += 125
 
     def print_deck(self):
+
+        # draws the main deck
 
         if len(self.deck_opened) == 0:
             self.win.blit((pygame.image.load("resource/cards/restock.png")), (430, 30))
@@ -168,6 +177,7 @@ class Card:
             x_increase = 0
 
             for i in reversed(range(1, (3 if len(self.deck_opened) >= 3 else len(self.deck_opened)) + 1)):
+                # draws the card pulled from the deck
 
                 self.win.blit((self.deck_opened[-i][0]), (430 + x_increase, 30))
                 self.deck_opened[-i][2] = pygame.Rect(430 + x_increase, 30, 106, 144)
@@ -185,10 +195,11 @@ class Card:
         if len(self.held_cards) == 0:
 
             if len(self.deck_opened) > 0 and self.deck_opened[-1][2].collidepoint(pos): 
+                # if the mouse collides with one of the cards pulled from the deck
                 
                 pygame.mixer.Sound.play(self.sounds[0])
 
-                self.pile_dragged_from = -1
+                self.pile_dragged_from = -1 # Just so the code dont crash later
 
                 self.held_cards.append(self.deck_opened.pop())
                 if len(self.deck_opened) != 0:
@@ -198,10 +209,11 @@ class Card:
                 return True
 
             if len(self.deck) > 0 and pygame.Rect(300, 30, 106, 144).collidepoint(pos): 
+                # if the mosue collides with the deck
 
                 pygame.mixer.Sound.play(self.sounds[2])
 
-                temp_opened = []
+                temp_opened = [] 
                 num_cards_to_draw = min(3, len(self.deck))
 
                 for _ in range(num_cards_to_draw):
@@ -232,7 +244,8 @@ class Card:
                 return True
 
             
-            if len(self.deck) == 0 and pygame.Rect(300, 30, 106, 144).collidepoint(pos): # Reuses the deck whenever the deck runs out of cards
+            if len(self.deck) == 0 and pygame.Rect(300, 30, 106, 144).collidepoint(pos): 
+                # Reuses the deck whenever the deck runs out of cards
 
                 self.reuse_cards_from_deck()
                  
@@ -245,8 +258,9 @@ class Card:
             for pile_number, pile in enumerate(self.piles):
                 for card in pile:
 
-                    if card[2].collidepoint(pos) and card[3] == False: # Plukker kort fra haugene hvis de er åpne
+                    if card[2].collidepoint(pos) and card[3] == False: 
                         if len(self.held_cards) == 0:
+                            # If the mouse collides with one of the cards OPENED in the pile
 
                             pygame.mixer.Sound.play(self.sounds[0])
 
@@ -260,7 +274,8 @@ class Card:
                  
             for col in self.top_decks:
 
-                if col[0][2].collidepoint(pos) and len(col) != 1: # Plukker kort fra toppbunkene
+                if col[0][2].collidepoint(pos) and len(col) != 1: 
+                    # If the mouse collides with one of the ace piles
 
                     pygame.mixer.Sound.play(self.sounds[0])
 
@@ -275,7 +290,7 @@ class Card:
 
             for hitbox_index, hitbox in enumerate(self.pile_is_empty):
                 if (hitbox != False and hitbox.collidepoint(pos)) and (self.held_cards[0][1][1] == 13 or (hitbox_index == self.pile_dragged_from)):
-                    # Slipper kort på tomme hauger, kun hvis det er en konge eller kortet blir flyttet til orginal plass
+                    # If the mouse collides with a empty pile and its a king or the card is returning to its original
                     
                     pygame.mixer.Sound.play(self.sounds[1])
 
@@ -293,7 +308,7 @@ class Card:
                 for card in pile:
 
                     if card[2].collidepoint(pos) and (self.can_place(card, pile_number) == True):
-                        # Slipper korte(ne) på bestemt haug
+                        # if the mouse collides with a pile and you are allowed to place the card(s) under
 
                         pygame.mixer.Sound.play(self.sounds[1])
 
@@ -311,9 +326,10 @@ class Card:
                 for index, slot in enumerate(self.top_decks):
     
                     if slot[0][2].collidepoint(pos):
-                        # Slipper kort på toppbunkene hvis det er en Ace eller 1 + kortet under
+                        # If the mosue collides with the ace piles
 
                         if slot[-1][1][1] == 0 and self.held_cards[0][1][1] == 1:
+                            # If the holding card is an ace
 
                             pygame.mixer.Sound.play(self.sounds[1])
 
@@ -324,7 +340,9 @@ class Card:
                                 self.piles[self.pile_dragged_from][-1][3] = False
                             break
 
+                    
                         elif (slot[-1][1][1] == self.held_cards[0][1][1] - 1) and (slot[-1][1][0] == self.held_cards[0][1][0]):
+                            # If the holding card is the same suite and its value is 1+ the under card
 
                             pygame.mixer.Sound.play(self.sounds[1])
 
@@ -339,7 +357,7 @@ class Card:
                 
                 
             if pygame.Rect(430, 30, 106, 144).collidepoint(pos) and (self.pile_dragged_from == -1) and (len(self.held_cards) == 1):
-                # Slipper kort tilbake til bunken
+                # if the mouse collides with the deck and the card was just picked up from there
                 pygame.mixer.Sound.play(self.sounds[1])
 
                 self.deck_opened.append(self.held_cards[0])
@@ -352,9 +370,11 @@ class Card:
     def can_place(self, card, pile_number):
 
         if pile_number == self.pile_dragged_from:
+            
             return True  
 
         if len(self.held_cards) > 0 and card[1][1] - 1 == self.held_cards[0][1][1]:
+            # Checks if the card(s) is eligble to place in a pile
                 
             if (card[1][0] == "diamonds" or card[1][0] == "hearts") and (self.held_cards[0][1][0] == "spades" or self.held_cards[0][1][0] == "clubs"):
                 return True
