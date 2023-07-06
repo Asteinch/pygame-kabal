@@ -1,7 +1,7 @@
 import pygame
 import re
 import random
-import os
+import os, time
 
 pygame.mixer.init()
 
@@ -16,11 +16,10 @@ class Card:
         self.pile_dragged_from = -1
         self.deck_dragged_from = False
 
-        self.back_card = pygame.image.load("images/kort/backbluepattern.png")
-        self.empty_tile = pygame.image.load("images/kort/emptytile.png")
+        self.back_card = pygame.image.load("resource/cards/backbluepattern.png")
+        self.empty_tile = pygame.image.load("resource/cards/emptytile.png")
 
         self.held_cards = []
-
         self.all_cards = []
         self.deck = []
         self.deck_opened = []
@@ -34,11 +33,11 @@ class Card:
 
         self.pile_is_empty = [False, False, False, False, False, False, False]
 
-        self.sounds = [pygame.mixer.Sound("./sounds/pick_up.wav"), 
-                       pygame.mixer.Sound("./sounds/drop_card.wav"), 
-                       pygame.mixer.Sound("./sounds/pick_from_deck.wav"), 
-                       pygame.mixer.Sound("./sounds/reuse_deck.wav"),
-                       pygame.mixer.Sound("./sounds/win.wav")]
+        self.sounds = [pygame.mixer.Sound("./resource/sounds/pick_up.wav"), 
+                       pygame.mixer.Sound("./resource/sounds/drop_card.wav"), 
+                       pygame.mixer.Sound("./resource/sounds/pick_from_deck.wav"), 
+                       pygame.mixer.Sound("./resource/sounds/reuse_deck.wav"),
+                       pygame.mixer.Sound("./resource/sounds/win.wav")]
 
         self.get_all_cards()
         self.shuffle()
@@ -59,12 +58,12 @@ class Card:
 
     def get_all_cards(self):
 
-        for filename in os.listdir("images/kort"):
+        for filename in os.listdir("resource/cards/"):
 
             if filename != "backbluepattern.png" and filename != "emptytile.png" and filename != "restock.png":
 
                 self.all_cards.append(
-                    [pygame.image.load("images/kort/" + filename),
+                    [pygame.image.load("resource/cards/" + filename),
                     (self.get_value_and_type(filename)),
                     pygame.Rect(0, 0, 0, 0),
                     True]
@@ -163,7 +162,7 @@ class Card:
     def print_deck(self):
 
         if len(self.deck_opened) == 0:
-            self.win.blit((pygame.image.load("images/kort/restock.png")), (430, 30))
+            self.win.blit((pygame.image.load("resource/cards/restock.png")), (430, 30))
         else:
 
             x_increase = 0
@@ -175,7 +174,7 @@ class Card:
                 x_increase += 30
 
         if len(self.deck) == 0:
-            self.win.blit((pygame.image.load("images/kort/restock.png")), (300, 30))
+            self.win.blit((pygame.image.load("resource/cards/restock.png")), (300, 30))
         else:
             self.win.blit(self.back_card, (300, 30))
 
@@ -314,9 +313,9 @@ class Card:
                     if slot[0][2].collidepoint(pos):
                         # Slipper kort på toppbunkene hvis det er en Ace eller 1 + kortet under
 
-                        pygame.mixer.Sound.play(self.sounds[1])
+                        if slot[-1][1][1] == 0 and self.held_cards[0][1][1] == 1:
 
-                        if slot[0][1][1] == 0 and self.held_cards[0][1][1] == 1:
+                            pygame.mixer.Sound.play(self.sounds[1])
 
                             slot.append(self.held_cards[0])
                             self.held_cards = []
@@ -326,6 +325,8 @@ class Card:
                             break
 
                         elif (slot[-1][1][1] == self.held_cards[0][1][1] - 1) and (slot[-1][1][0] == self.held_cards[0][1][0]):
+
+                            pygame.mixer.Sound.play(self.sounds[1])
 
                             slot.append(self.held_cards[0])
                             self.held_cards = []
