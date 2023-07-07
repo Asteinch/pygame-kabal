@@ -7,6 +7,7 @@ class Game:
         self.win = pygame.display.set_mode((1200, 800))
         pygame.display.set_caption("Solitaire")
         self.clock = pygame.time.Clock()
+        self.has_won = False
         self.new_game()
 
     def new_game(self):
@@ -42,10 +43,11 @@ class Game:
                     if self.Cards.pick_from_deck(pos):
                         continue
                 
-            else:
+            elif self.has_won == False:
 
                 pygame.display.set_caption("Won")
                 pygame.mixer.Sound.play(self.Cards.sounds[4])
+                self.has_won = True
 
 
     def main_loop(self):
