@@ -112,9 +112,10 @@ class Card:
     def pick_cards_from_deck(self):
         # Deals 3 cards to the player, fucntion called when deck is pressed
 
-        self.deck_opened.append(self.deck[-1])
-        self.deck.remove(self.deck[-1])
-        self.deck_opened[-1][2] = pygame.Rect(430, 30, 106, 144)
+        if len(self.deck) != 0:
+            self.deck_opened.append(self.deck[-1])
+            self.deck.remove(self.deck[-1])
+            self.deck_opened[-1][2] = pygame.Rect(430, 30, 106, 144)
 
 # ------------- Graphics 
 
